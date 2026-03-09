@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Future Market Pro — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --orange:#E8841A;--sidebar:#0d1a0d;--sidebar2:#1a2e0a;
+  --sell:#dc2626;--buy:#16a34a;
+  --text:#111827;--muted:#6b7280;--border:#e5e7eb;
+  --bg:#f9fafb;--white:#fff;
+  --yellow:#d97706;--blue:#1d4ed8;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+
+/* ADMIN LOGIN */
+.adm-login{position:fixed;inset:0;background:linear-gradient(160deg,#0d1a0d,#1a2e0a);display:flex;align-items:center;justify-content:center;z-index:999}
+.adm-box{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:36px;width:360px;max-width:90vw}
+.adm-logo{text-align:center;margin-bottom:24px}
+.adm-logo img{height:38px;width:auto;filter:brightness(0) invert(1);object-fit:contain}
+.adm-logo h2{color:#fff;font-size:18px;font-weight:800;margin-top:10px}
+.adm-logo p{color:rgba(255,255,255,0.45);font-size:11px;margin-top:3px}
+.adm-inp{width:100%;padding:11px 13px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:13px;outline:none;margin-bottom:10px;font-family:inherit;display:block}
+.adm-inp::placeholder{color:rgba(255,255,255,0.35)}
+.adm-inp:focus{border-color:var(--orange)}
+.adm-btn{width:100%;padding:12px;background:var(--orange);border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px}
+.adm-btn:hover{background:#d07510}
+.adm-err{color:#f87171;font-size:12px;text-align:center;margin-top:8px;display:none}
+
+/* SIDEBAR */
+.sb{width:230px;background:var(--sidebar);min-height:100vh;display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;overflow-y:auto}
+.sb-logo{padding:18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.sb-logo img{height:28px;width:auto;filter:brightness(0) invert(1);object-fit:contain}
+.sb-tag{font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:.5px;text-transform:uppercase;margin-top:2px}
+.sb-sec{padding:8px 0}
+.sb-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.2);padding:7px 16px 3px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;transition:all .15s;color:rgba(255,255,255,0.55);font-size:12px;font-weight:500;border-left:3px solid transparent}
+.sb-item:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.9)}
+.sb-item.active{background:rgba(232,132,26,0.15);color:#fff;border-left:3px solid var(--orange)}
+.sb-item svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+.sb-badge{margin-left:auto;background:var(--sell);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px}
+.sb-badge.ora{background:var(--orange)}
+
+/* MAIN */
+.main{margin-left:230px;flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:90}
+.tb-title{font-size:17px;font-weight:800}
+.av{width:32px;height:32px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800;cursor:pointer}
+.content{padding:22px;flex:1}
+
+/* SECTIONS */
+.sec{display:none}.sec.active{display:block}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat{background:var(--white);border-radius:12px;padding:18px;border:1px solid var(--border)}
+.stat-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.stat-ico svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2}
+.ic-or{background:linear-gradient(135deg,var(--orange),#b86a00)}
+.ic-gr{background:linear-gradient(135deg,#27ae60,#1a8a48)}
+.ic-re{background:linear-gradient(135deg,#e74c3c,#c0392b)}
+.ic-ye{background:linear-gradient(135deg,#f39c12,#d68910)}
+.ic-bl{background:linear-gradient(135deg,#3b82f6,#1d4ed8)}
+.stat-lbl{font-size:11px;color:var(--muted);margin-bottom:3px}
+.stat-val{font-size:22px;font-weight:800}
+.stat-sub{font-size:11px;margin-top:3px}
+.pos{color:var(--buy)}.neg{color:var(--sell)}
+
+/* CARD */
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);margin-bottom:18px;overflow:hidden}
+.card-hdr{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.card-title{font-size:14px;font-weight:700}
+
+/* BUTTONS */
+.btn{padding:7px 13px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .15s}
+.btn-primary{background:var(--orange);color:#fff}.btn-primary:hover{background:#d07510}
+.btn-outline{background:none;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{background:var(--bg)}
+.btn-success{background:#dcfce7;color:var(--buy)}.btn-success:hover{background:#bbf7d0}
+.btn-danger{background:#fee2e2;color:var(--sell)}.btn-danger:hover{background:#fecaca}
+.btn-warn{background:#fef3c7;color:var(--yellow)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-xs{padding:3px 7px;font-size:10px}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--bg)}
+th{padding:9px 14px;text-align:left;font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap}
+td{padding:10px 14px;font-size:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.b-active{background:#dcfce7;color:var(--buy)}
+.b-pending{background:#fef3c7;color:var(--yellow)}
+.b-rejected{background:#fee2e2;color:var(--sell)}
+.b-inactive{background:#f3f4f6;color:var(--muted)}
+.b-approved{background:#dbeafe;color:var(--blue)}
+.b-open{background:#dbeafe;color:var(--blue)}
+.b-closed{background:#f3f4f6;color:var(--muted)}
+.b-buy{background:#dcfce7;color:var(--buy)}
+.b-sell{background:#fee2e2;color:var(--sell)}
+
+/* TOOLBAR OPTION*/
+.toolbar{padding:11px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tsw{position:relative;flex:1;min-width:160px}
+.tsw svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;stroke:#999;fill:none;stroke-width:2}
+.t-search{width:100%;padding:7px 10px 7px 28px;border:1px solid var(--border);border-radius:7px;font-size:12px;outline:none;font-family:inherit}
+.t-select{border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;outline:none;font-family:inherit;cursor:pointer}
+
+/* TABS OPTION*/
+.tab-bar{display:flex;border-bottom:1px solid var(--border);padding:0 16px;background:var(--white)}
+.tab{padding:10px 14px;font-size:12px;font-weight:500;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent}
+.tab.active{color:var(--orange);border-bottom:2px solid var(--orange)}
+
+/* FORM OPTION*/
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.fl{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.fc{padding:9px 11px;border:1px solid var(--border);border-radius:7px;font-size:13px;outline:none;font-family:inherit;width:100%}
+.fc:focus{border-color:var(--orange)}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:18px}
+.ffull{grid-column:1/-1}
+.ffoot{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:8px}
+
+/* MODAL OPTION*/
+.mod-bg{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;display:none;align-items:center;justify-content:center;padding:20px}
+.mod-bg.open{display:flex}
+.mod-box{background:#fff;border-radius:14px;width:500px;max-width:100%;max-height:90vh;overflow-y:auto}
+.mod-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.mod-hdr h3{font-size:15px;font-weight:700}
+.mod-close{background:none;border:none;font-size:20px;cursor:pointer;color:#999;font-family:inherit}
+
+/* APPROVAL BANNER  OPTION*/
+.abanner{background:#fff8ee;border:1px solid var(--orange);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.abanner svg{width:20px;height:20px;stroke:var(--orange);fill:none;stroke-width:2;flex-shrink:0}
+.abanner-msg{font-size:12px;color:var(--orange);font-weight:600}
+.abanner-sub{font-size:11px;color:#b86a00}
+
+/* PRICE EDITOR OPTION */
+.edit-note{background:#fffbeb;border-left:3px solid var(--yellow);padding:11px 14px;font-size:12px;color:#92400e;margin:14px 18px;border-radius:0 8px 8px 0}
+.price-inp{width:110px;padding:6px 9px;border:1px solid var(--border);border-radius:6px;font-size:12px;outline:none;font-family:inherit}
+.price-inp:focus{border-color:var(--orange)}
+
+/* NOTIFY OPTION */
+.notif{position:fixed;top:18px;right:18px;background:#1a1a2e;color:#fff;padding:11px 18px;border-radius:8px;font-size:12px;z-index:9999;display:none;box-shadow:0 8px 24px rgba(0,0,0,0.2);max-width:300px}
+.notif.show{display:block;animation:nslide .3s ease}
+@keyframes nslide{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+.pcnt{display:inline-flex;align-items:center;justify-content:center;background:var(--orange);color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;margin-left:5px;vertical-align:middle}
+</style>
+</head>
+<body>
+
+<!-- MY ADMIN LOGIN -->
+<div id="admLogin" style="position:fixed;inset:0;background:linear-gradient(160deg,#0d1a0d,#1a2e0a);display:flex;align-items:center;justify-content:center;z-index:999">
+  <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:36px;width:360px;max-width:90vw">
+    <div style="text-align:center;margin-bottom:24px">
+      <img id="logo-login" style="height:38px;width:auto;filter:brightness(0) invert(1);object-fit:contain" alt="FMP"/>
+      <div style="color:#fff;font-size:18px;font-weight:800;margin-top:10px">Admin Panel</div>
+      <div style="color:rgba(255,255,255,0.45);font-size:11px;margin-top:3px">Future Market Pro &mdash; Control Center</div>
+    </div>
+    <input id="adm-email" type="email" placeholder="Admin email" style="width:100%;padding:11px 13px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:13px;outline:none;margin-bottom:10px;font-family:inherit;display:block" value="admin@futuremarketpro.com"/>
+    <input id="adm-pass" type="password" placeholder="Password" style="width:100%;padding:11px 13px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:13px;outline:none;margin-bottom:10px;font-family:inherit;display:block" value="admin123"/>
+    <div id="adm-err" style="color:#f87171;font-size:12px;text-align:center;margin-bottom:8px;display:none">Invalid credentials. Try again.</div>
+    <button id="admLoginBtn" style="width:100%;padding:12px;background:#E8841A;border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Login to Admin Panel</button>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sb" id="sbEl" style="display:none">
+  <div class="sb-logo">
+    <div>
+      <img id="logo-sb" style="height:26px;width:auto;filter:brightness(0) invert(1);object-fit:contain" alt="FMP"/>
+      <div class="sb-tag">Admin Panel</div>
+    </div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Main</div>
+    <div class="sb-item active" id="nav-dashboard">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </div>
+    <div class="sb-item" id="nav-approvals">
+      <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      Approvals <span class="sb-badge ora" id="pendingBadge" style="display:none">0</span>
+    </div>
+    <div class="sb-item" id="nav-clients">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Clients
+    </div>
+    <div class="sb-item" id="nav-trades">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Trades
+    </div>
+    <div class="sb-item" id="nav-tradeEditor">
+      <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Price Editor <span class="sb-badge ora">KEY</span>
+    </div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Finance</div>
+    <div class="sb-item" id="nav-deposits">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Deposits
+    </div>
+    <div class="sb-item" id="nav-withdrawals">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Withdrawals <span class="sb-badge" id="wdBadge" style="display:none">0</span>
+    </div>
+    <div class="sb-item" id="nav-bonus">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+      Bonus Manager
+    </div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Account</div>
+    <div class="sb-item" id="nav-logout">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="mainEl" style="display:none">
+  <div class="topbar">
+    <div class="tb-title" id="tbTitle">Dashboard</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="text-align:right"><div style="font-size:12px;font-weight:700">Super Admin</div><div style="font-size:10px;color:var(--muted)">admin@futuremarketpro.com</div></div>
+      <div class="av">A</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="sec active" id="sec-dashboard">
+      <div id="pendingBanner"></div>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-ico ic-bl"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+          <div class="stat-lbl">Total Clients</div>
+          <div class="stat-val" id="ds-total">0</div>
+          <div class="stat-sub pos" id="ds-active">0 active</div>
+        </div>
+        <div class="stat">
+          <div class="stat-ico ic-or"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="stat-lbl">Pending Approval</div>
+          <div class="stat-val" id="ds-pending">0</div>
+          <div class="stat-sub" style="color:var(--orange)">Needs review</div>
+        </div>
+        <div class="stat">
+          <div class="stat-ico ic-gr"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div class="stat-lbl">Total Deposits</div>
+          <div class="stat-val" id="ds-deps">$0</div>
+          <div class="stat-sub pos">All approved</div>
+        </div>
+        <div class="stat">
+          <div class="stat-ico ic-ye"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg></div>
+          <div class="stat-lbl">Total Bonuses</div>
+          <div class="stat-val" id="ds-bonus">$0</div>
+          <div class="stat-sub pos">Credited</div>
+        </div>
+      </div>
+      <div class="card" id="pendingCard">
+        <div class="card-hdr">
+          <div class="card-title">&#x1F514; Pending Registrations <span id="pendingCntLabel" class="pcnt">0</span></div>
+          <button class="btn btn-primary btn-sm" id="viewAllPendingBtn">View All</button>
+        </div>
+        <div id="dashPendingTable"><div style="padding:28px;text-align:center;color:var(--muted);font-size:12px">No pending registrations</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-title">Active Clients</div></div>
+        <table><thead><tr><th>Name</th><th>Email</th><th>Balance</th><th>Account</th><th>Status</th><th>Joined</th></tr></thead>
+        <tbody id="dashClientsBody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- CLIENTS APPROVALS -->
+    <div class="sec" id="sec-approvals">
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">Registration Approvals</div>
+          <div style="font-size:11px;color:var(--muted)">Review and approve or reject new registrations</div>
+        </div>
+        <div id="approvalsContent"></div>
+      </div>
+    </div>
+
+    <!-- CLIENTS -->
+    <div class="sec" id="sec-clients">
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">All Clients</div>
+          <button class="btn btn-primary btn-sm" id="addClientBtn">+ Add Client</button>
+        </div>
+        <div class="toolbar">
+          <div class="tsw">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input class="t-search" id="clientSearch" placeholder="Search clients..."/>
+          </div>
+          <select class="t-select" id="clientStatusFilter">
+            <option value="">All Status</option>
+            <option>Active</option><option>Pending</option><option>Inactive</option><option>Rejected</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto">
+        <table><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Balance</th><th>Bonus</th><th>Account</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+        <tbody id="clientsBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRADES -->
+    <div class="sec" id="sec-trades">
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">Trade Management</div>
+        </div>
+        <div class="tab-bar">
+          <div class="tab active" id="tradeTabOpen">Open Positions</div>
+          <div class="tab" id="tradeTabClosed">Closed Positions</div>
+        </div>
+        <div style="overflow-x:auto">
+        <table><thead><tr><th>ID</th><th>Client</th><th>Symbol</th><th>Side</th><th>Open Price</th><th>Close Price</th><th>Lots</th><th>P&amp;L</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="tradesBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRICE EDITOR -->
+    <div class="sec" id="sec-tradeEditor">
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">&#127919; Trade Price Editor</div>
+          <select class="t-select" id="editorClientSel" style="min-width:200px">
+            <option value="">&#8212; Select Client &#8212;</option>
+          </select>
+        </div>
+        <div class="edit-note">&#9888;&#65039; <strong>Admin Override:</strong> Manually set Open/Close prices. P&amp;L recalculates automatically. Changes are immediate.</div>
+        <div id="editorContent"><div style="padding:50px;text-align:center;color:var(--muted);font-size:12px">Select a client above to view their trades</div></div>
+      </div>
+    </div>
+
+    <!-- DEPOSITS -->
+    <div class="sec" id="sec-deposits">
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">Deposit Management</div>
+          <button class="btn btn-primary btn-sm" id="addDepositBtn">+ Add Deposit</button>
+        </div>
+        <div style="overflow-x:auto">
+        <table><thead><tr><th>ID</th><th>Client</th><th>Amount</th><th>Method</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="depositsBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- WITHDRAWALS -->
+    <div class="sec" id="sec-withdrawals">
+      <div class="card">
+        <div class="card-hdr"><div class="card-title">Withdrawal Requests</div></div>
+        <div style="overflow-x:auto">
+        <table><thead><tr><th>ID</th><th>Client</th><th>Amount</th><th>Method</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="withdrawalsBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- BONUS -->
+    <div class="sec" id="sec-bonus">
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">&#x1F4B0; Bonus Manager</div>
+          <button class="btn btn-primary btn-sm" id="addBonusBtn">+ Add Bonus</button>
+        </div>
+        <div style="padding:10px 18px;background:#f0fdf4;border-bottom:1px solid var(--border)">
+          <p style="font-size:11px;color:var(--buy);font-weight:500">Add bonuses to client accounts &mdash; credited instantly to balance.</p>
+        </div>
+        <table><thead><tr><th>Client</th><th>Type</th><th>Amount</th><th>By</th><th>Date</th><th>Status</th></tr></thead>
+        <tbody id="bonusBody"></tbody></table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="mod-bg" id="modBg">
+  <div class="mod-box">
+    <div class="mod-hdr">
+      <h3 id="modTitle">Modal</h3>
+      <button class="mod-close" id="modCloseBtn">&#x2715;</button>
+    </div>
+    <div id="modContent"></div>
+  </div>
+</div>
+
+<!-- NOTIFY -->
+<div class="notif" id="notif"></div>
+
+<script>
+(function() {
+
+// ========== LOGO ==========
+var LOGO_SRC = "data:image/png;base64,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";
+['logo-login','logo-sb'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (el) el.src = LOGO_SRC;
+});
+
+// ========== STORAGE ==========
+function getStorage() { try { return JSON.parse(localStorage.getItem('fmp_data') || '{}'); } catch(e) { return {}; } }
+function setStorage(d) { try { localStorage.setItem('fmp_data', JSON.stringify(d)); } catch(e) {} }
+function getClients() { return getStorage().clients || []; }
+function saveClients(c) { var d = getStorage(); d.clients = c; setStorage(d); }
+
+// ========== DEMO SEED ==========
+function seedIfEmpty() {
+  var clients = getClients();
+  if (clients.length === 0) {
+    saveClients([
+      {id:1001,appId:'FMP-100001',name:'John Smith',firstName:'John',lastName:'Smith',email:'john@example.com',phone:'+1 234 567 8900',country:'USA',accountType:'Classic',password:'pass123',balance:5000,bonus:500,status:'Active',joined:'01-01-2026',registeredAt:new Date().toISOString()},
+      {id:1002,appId:'FMP-100002',name:'Sara Lee',firstName:'Sara',lastName:'Lee',email:'sara@example.com',phone:'+44 7700 900123',country:'UK',accountType:'Premium',password:'pass123',balance:12000,bonus:1000,status:'Active',joined:'15-01-2026',registeredAt:new Date().toISOString()},
+      {id:1003,appId:'FMP-100003',name:'Raj Kumar',firstName:'Raj',lastName:'Kumar',email:'raj@example.com',phone:'+91 98765 43210',country:'India',accountType:'Standard',password:'pass123',balance:3500,bonus:0,status:'Active',joined:'20-01-2026',registeredAt:new Date().toISOString()}
+    ]);
+  }
+}
+
+// ========== LOCAL DATA ==========
+var localTrades = [
+  {id:27016,clientId:1001,client:'John Smith',symbol:'XAU/USD',symId:'XAUUSD',side:'BUY',openTime:'23-02-2026 08:17 PM',closeTime:'23-02-2026 08:30 PM',openPrice:5194.10,closePrice:5194.91,lots:0.1,pnl:8.10,status:'Closed'},
+  {id:27020,clientId:1002,client:'Sara Lee',symbol:'EUR/USD',symId:'EURUSD',side:'SELL',openTime:'09-03-2026 10:00 AM',closeTime:'',openPrice:1.18050,closePrice:0,lots:1.0,pnl:-12.40,status:'Open'},
+  {id:27025,clientId:1003,client:'Raj Kumar',symbol:'BTC/USD',symId:'BTCUSD',side:'BUY',openTime:'09-03-2026 11:30 AM',closeTime:'',openPrice:65890.00,closePrice:0,lots:0.01,pnl:45.00,status:'Open'},
+  {id:26978,clientId:1001,client:'John Smith',symbol:'XAU/USD',symId:'XAUUSD',side:'BUY',openTime:'23-02-2026 07:59 PM',closeTime:'23-02-2026 08:10 PM',openPrice:5164.61,closePrice:5165.06,lots:0.1,pnl:4.50,status:'Closed'}
+];
+var localDeposits = [
+  {id:'DEP001',clientId:1001,client:'John Smith',amount:5000,method:'Bank Transfer',date:'01-01-2026',status:'Approved'},
+  {id:'DEP002',clientId:1002,client:'Sara Lee',amount:12000,method:'USDT',date:'15-01-2026',status:'Approved'},
+  {id:'DEP003',clientId:1003,client:'Raj Kumar',amount:3500,method:'Bank Transfer',date:'20-01-2026',status:'Approved'}
+];
+var localWithdrawals = [
+  {id:'WD001',clientId:1001,client:'John Smith',amount:500,method:'Bank Transfer',date:'09-03-2026',status:'Pending'},
+  {id:'WD002',clientId:1002,client:'Sara Lee',amount:1200,method:'USDT',date:'09-03-2026',status:'Pending'}
+];
+var localBonuses = [
+  {client:'John Smith',type:'Welcome Bonus',amount:500,by:'Admin',date:'01-01-2026',status:'Active'},
+  {client:'Sara Lee',type:'Deposit Bonus',amount:1000,by:'Admin',date:'15-01-2026',status:'Active'}
+];
+var curTradeTab = 'open';
+
+// ========== NOTIFY ==========
+function notify(msg) {
+  var el = document.getElementById('notif');
+  el.textContent = msg;
+  el.className = 'notif show';
+  setTimeout(function() { el.className = 'notif'; }, 3200);
+}
+
+// ========== AUTH ==========
+function doAdminLogin() {
+  var email = document.getElementById('adm-email').value.trim();
+  var pass = document.getElementById('adm-pass').value;
+  var errEl = document.getElementById('adm-err');
+  if (!email || !pass) { errEl.style.display = 'block'; return; }
+  if (email === 'admin@futuremarketpro.com' && pass === 'admin123') {
+    document.getElementById('admLogin').style.display = 'none';
+    document.getElementById('sbEl').style.display = 'flex';
+    document.getElementById('mainEl').style.display = 'flex';
+    seedIfEmpty();
+    renderAll();
+    refreshBadges();
+  } else {
+    errEl.style.display = 'block';
+  }
+}
+
+function doAdminLogout() {
+  document.getElementById('admLogin').style.display = 'flex';
+  document.getElementById('sbEl').style.display = 'none';
+  document.getElementById('mainEl').style.display = 'none';
+}
+
+document.getElementById('admLoginBtn').addEventListener('click', doAdminLogin);
+document.getElementById('adm-pass').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doAdminLogin();
+});
+document.getElementById('nav-logout').addEventListener('click', doAdminLogout);
+
+// ========== BADGES ==========
+function refreshBadges() {
+  var pending = getClients().filter(function(c) { return c.status === 'Pending'; }).length;
+  var badge = document.getElementById('pendingBadge');
+  badge.textContent = pending;
+  badge.style.display = pending > 0 ? 'inline-flex' : 'none';
+  document.getElementById('pendingCntLabel').textContent = pending;
+  var wdPending = localWithdrawals.filter(function(w) { return w.status === 'Pending'; }).length;
+  var wdBadge = document.getElementById('wdBadge');
+  wdBadge.textContent = wdPending;
+  wdBadge.style.display = wdPending > 0 ? 'inline-flex' : 'none';
+}
+
+// ========== RENDER ALL ==========
+function renderAll() {
+  renderDashboard();
+  renderApprovals();
+  renderClients();
+  renderTrades();
+  renderDeposits();
+  renderWithdrawals();
+  renderBonus();
+  populateEditorSelect();
+}
+
+// ========== DASHBOARD ==========
+function renderDashboard() {
+  var clients = getClients();
+  var active = clients.filter(function(c) { return c.status === 'Active'; });
+  var pending = clients.filter(function(c) { return c.status === 'Pending'; });
+  document.getElementById('ds-total').textContent = clients.length;
+  document.getElementById('ds-active').textContent = active.length + ' active';
+  document.getElementById('ds-pending').textContent = pending.length;
+  var totDep = localDeposits.filter(function(d) { return d.status === 'Approved'; }).reduce(function(a,b) { return a+b.amount; }, 0);
+  document.getElementById('ds-deps').textContent = '$' + totDep.toLocaleString();
+  var totBon = localBonuses.reduce(function(a,b) { return a+b.amount; }, 0);
+  document.getElementById('ds-bonus').textContent = '$' + totBon.toLocaleString();
+
+  if (pending.length > 0) {
+    var bannerHTML = '<div class="abanner">' +
+      '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+      '<div><div class="abanner-msg">' + pending.length + ' registration(s) awaiting approval</div>' +
+      '<div class="abanner-sub">Go to Approvals to review and activate accounts</div></div>' +
+      '<button class="btn btn-primary btn-sm" id="bannerReviewBtn" style="margin-left:auto">Review Now &#8594;</button></div>';
+    document.getElementById('pendingBanner').innerHTML = bannerHTML;
+    document.getElementById('bannerReviewBtn').addEventListener('click', function() {
+      goSec('approvals');
+    });
+  } else {
+    document.getElementById('pendingBanner').innerHTML = '';
+  }
+
+  if (pending.length > 0) {
+    var rows = '';
+    pending.forEach(function(c) {
+      rows += '<tr>' +
+        '<td style="font-size:11px;color:var(--orange);font-weight:700">' + c.appId + '</td>' +
+        '<td><strong>' + c.name + '</strong></td>' +
+        '<td>' + c.email + '</td>' +
+        '<td>' + c.accountType + '</td>' +
+        '<td>' + c.joined + '</td>' +
+        '<td>' +
+        '<button class="btn btn-success btn-xs approve-btn" data-id="' + c.id + '">&#x2713; Approve</button> ' +
+        '<button class="btn btn-danger btn-xs reject-btn" data-id="' + c.id + '">&#x2717; Reject</button>' +
+        '</td></tr>';
+    });
+    document.getElementById('dashPendingTable').innerHTML = '<table><thead><tr><th>App ID</th><th>Name</th><th>Email</th><th>Account</th><th>Registered</th><th>Actions</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    document.querySelectorAll('.approve-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() { approveClient(parseInt(this.getAttribute('data-id'))); });
+    });
+    document.querySelectorAll('.reject-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() { rejectClient(parseInt(this.getAttribute('data-id'))); });
+    });
+  } else {
+    document.getElementById('dashPendingTable').innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">&#x2713; No pending registrations</div>';
+  }
+
+  var clientRows = '';
+  active.slice(0,5).forEach(function(c) {
+    clientRows += '<tr><td><strong>' + c.name + '</strong></td><td>' + c.email + '</td>' +
+      '<td><strong>$' + Number(c.balance||0).toLocaleString() + '</strong></td>' +
+      '<td>' + c.accountType + '</td>' +
+      '<td><span class="badge b-active">Active</span></td>' +
+      '<td>' + c.joined + '</td></tr>';
+  });
+  document.getElementById('dashClientsBody').innerHTML = clientRows || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)">No active clients</td></tr>';
+}
+
+// ========== APPROVALS ==========
+function renderApprovals() {
+  var pending = getClients().filter(function(c) { return c.status === 'Pending'; });
+  var container = document.getElementById('approvalsContent');
+  if (pending.length === 0) {
+    container.innerHTML = '<div style="padding:60px;text-align:center"><div style="font-size:38px;margin-bottom:12px">&#x2705;</div><div style="font-size:14px;font-weight:700;color:var(--muted)">All caught up!</div><div style="font-size:12px;color:var(--muted);margin-top:6px">No pending registrations</div></div>';
+    return;
+  }
+  var rows = '';
+  pending.forEach(function(c) {
+    rows += '<tr>' +
+      '<td><span style="font-size:11px;font-weight:700;color:var(--orange)">' + c.appId + '</span></td>' +
+      '<td><strong>' + c.name + '</strong></td>' +
+      '<td>' + c.email + '</td>' +
+      '<td>' + (c.phone||'—') + '</td>' +
+      '<td>' + (c.country||'—') + '</td>' +
+      '<td><span class="badge b-approved">' + c.accountType + '</span></td>' +
+      '<td>' + c.joined + '</td>' +
+      '<td style="white-space:nowrap">' +
+      '<button class="btn btn-success btn-sm appr-btn" data-id="' + c.id + '">&#x2713; Approve</button> ' +
+      '<button class="btn btn-danger btn-sm rej-btn" data-id="' + c.id + '">&#x2717; Reject</button>' +
+      '</td></tr>';
+  });
+  container.innerHTML = '<div style="overflow-x:auto"><table><thead><tr><th>App ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Country</th><th>Account</th><th>Registered</th><th>Actions</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  container.querySelectorAll('.appr-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { approveClient(parseInt(this.getAttribute('data-id'))); });
+  });
+  container.querySelectorAll('.rej-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { rejectClient(parseInt(this.getAttribute('data-id'))); });
+  });
+}
+
+function approveClient(id) {
+  var clients = getClients();
+  for (var i = 0; i < clients.length; i++) {
+    if (clients[i].id === id) {
+      var name = clients[i].name;
+      clients[i].status = 'Active';
+      if (!clients[i].balance) clients[i].balance = 0;
+      saveClients(clients);
+      renderAll();
+      refreshBadges();
+      notify('&#x2713; ' + name + ' approved and activated!');
+      return;
+    }
+  }
+}
+
+function rejectClient(id) {
+  var clients = getClients();
+  for (var i = 0; i < clients.length; i++) {
+    if (clients[i].id === id) {
+      clients[i].status = 'Rejected';
+      saveClients(clients);
+      renderAll();
+      refreshBadges();
+      notify(clients[i].name + ' registration rejected');
+      return;
+    }
+  }
+}
+
+// ========== CLIENTS ==========
+function renderClients() {
+  var clients = getClients();
+  var rows = '';
+  clients.forEach(function(c) {
+    var bCls = {Active:'b-active',Pending:'b-pending',Rejected:'b-rejected',Inactive:'b-inactive'}[c.status] || 'b-inactive';
+    rows += '<tr>' +
+      '<td>' + c.id + '</td>' +
+      '<td><strong>' + c.name + '</strong></td>' +
+      '<td style="font-size:11px">' + c.email + '</td>' +
+      '<td style="font-size:11px">' + (c.phone||'—') + '</td>' +
+      '<td><strong>$' + Number(c.balance||0).toLocaleString() + '</strong></td>' +
+      '<td>$' + (c.bonus||0) + '</td>' +
+      '<td>' + c.accountType + '</td>' +
+      '<td><span class="badge ' + bCls + '">' + c.status + '</span></td>' +
+      '<td>' + c.joined + '</td>' +
+      '<td style="white-space:nowrap">' +
+      (c.status === 'Pending' ? '<button class="btn btn-success btn-xs cl-appr-btn" data-id="' + c.id + '">Approve</button> ' : '') +
+      '<button class="btn btn-outline btn-xs cl-edit-btn" data-id="' + c.id + '">Edit</button> ' +
+      '<button class="btn btn-warn btn-xs cl-bonus-btn" data-id="' + c.id + '" data-name="' + c.name + '">+Bonus</button> ' +
+      '<button class="btn btn-primary btn-xs cl-bal-btn" data-id="' + c.id + '">Balance</button>' +
+      '</td></tr>';
+  });
+  document.getElementById('clientsBody').innerHTML = rows || '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--muted)">No clients found</td></tr>';
+  document.querySelectorAll('.cl-appr-btn').forEach(function(btn) { btn.addEventListener('click', function() { approveClient(parseInt(this.getAttribute('data-id'))); }); });
+  document.querySelectorAll('.cl-edit-btn').forEach(function(btn) { btn.addEventListener('click', function() { openMod('editClient', parseInt(this.getAttribute('data-id'))); }); });
+  document.querySelectorAll('.cl-bonus-btn').forEach(function(btn) { btn.addEventListener('click', function() { openMod('addBonus', this.getAttribute('data-name')); }); });
+  document.querySelectorAll('.cl-bal-btn').forEach(function(btn) { btn.addEventListener('click', function() { openMod('adjBal', parseInt(this.getAttribute('data-id'))); }); });
+}
+
+document.getElementById('clientSearch').addEventListener('input', function() {
+  var q = this.value.toLowerCase();
+  document.querySelectorAll('#clientsBody tr').forEach(function(r) {
+    r.style.display = r.textContent.toLowerCase().indexOf(q) >= 0 ? '' : 'none';
+  });
+});
+document.getElementById('clientStatusFilter').addEventListener('change', function() {
+  var s = this.value;
+  document.querySelectorAll('#clientsBody tr').forEach(function(r) {
+    r.style.display = !s || r.textContent.indexOf(s) >= 0 ? '' : 'none';
+  });
+});
+
+// ========== TRADES ==========
+function renderTrades() {
+  var filtered = localTrades.filter(function(t) { return curTradeTab === 'open' ? t.status === 'Open' : t.status === 'Closed'; });
+  var rows = '';
+  filtered.forEach(function(t) {
+    rows += '<tr>' +
+      '<td style="font-size:11px">#' + t.id + '</td>' +
+      '<td>' + t.client + '</td>' +
+      '<td><strong>' + t.symbol + '</strong></td>' +
+      '<td><span class="badge b-' + t.side.toLowerCase() + '">' + t.side + '</span></td>' +
+      '<td>' + t.openPrice + '</td>' +
+      '<td>' + (t.closePrice || '—') + '</td>' +
+      '<td>' + t.lots + '</td>' +
+      '<td><strong style="color:' + (t.pnl >= 0 ? 'var(--buy)' : 'var(--sell)') + '">' + (t.pnl >= 0 ? '+' : '') + t.pnl.toFixed(2) + '</strong></td>' +
+      '<td><span class="badge b-' + t.status.toLowerCase() + '">' + t.status + '</span></td>' +
+      '<td>' +
+      '<button class="btn btn-outline btn-xs tr-edit-btn" data-id="' + t.id + '">Edit</button>' +
+      (t.status === 'Open' ? ' <button class="btn btn-danger btn-xs tr-close-btn" data-id="' + t.id + '">Close</button>' : '') +
+      '</td></tr>';
+  });
+  document.getElementById('tradesBody').innerHTML = rows || '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--muted)">No trades</td></tr>';
+  document.querySelectorAll('.tr-edit-btn').forEach(function(btn) { btn.addEventListener('click', function() { openMod('editTrade', parseInt(this.getAttribute('data-id'))); }); });
+  document.querySelectorAll('.tr-close-btn').forEach(function(btn) { btn.addEventListener('click', function() { openMod('editTrade', parseInt(this.getAttribute('data-id'))); }); });
+}
+
+document.getElementById('tradeTabOpen').addEventListener('click', function() {
+  curTradeTab = 'open';
+  document.getElementById('tradeTabOpen').classList.add('active');
+  document.getElementById('tradeTabClosed').classList.remove('active');
+  renderTrades();
+});
+document.getElementById('tradeTabClosed').addEventListener('click', function() {
+  curTradeTab = 'closed';
+  document.getElementById('tradeTabClosed').classList.add('active');
+  document.getElementById('tradeTabOpen').classList.remove('active');
+  renderTrades();
+});
+
+// ========== PRICE EDITOR ==========
+function populateEditorSelect() {
+  var clients = getClients().filter(function(c) { return c.status === 'Active'; });
+  var sel = document.getElementById('editorClientSel');
+  var opts = '<option value="">&#8212; Select Client &#8212;</option>';
+  clients.forEach(function(c) { opts += '<option value="' + c.id + '">' + c.name + ' (' + c.email + ')</option>'; });
+  sel.innerHTML = opts;
+}
+
+document.getElementById('editorClientSel').addEventListener('change', function() {
+  var cid = parseInt(this.value);
+  var container = document.getElementById('editorContent');
+  if (!cid) { container.innerHTML = '<div style="padding:50px;text-align:center;color:var(--muted);font-size:12px">Select a client</div>'; return; }
+  var trades = localTrades.filter(function(t) { return t.clientId === cid; });
+  if (!trades.length) { container.innerHTML = '<div style="padding:50px;text-align:center;color:var(--muted);font-size:12px">No trades for this client</div>'; return; }
+  var rows = '';
+  trades.forEach(function(t) {
+    rows += '<tr id="erow-' + t.id + '">' +
+      '<td style="font-size:11px">#' + t.id + '</td>' +
+      '<td><strong>' + t.symbol + '</strong></td>' +
+      '<td><span class="badge b-' + t.side.toLowerCase() + '">' + t.side + '</span></td>' +
+      '<td><span class="badge b-' + t.status.toLowerCase() + '">' + t.status + '</span></td>' +
+      '<td><input type="number" step="0.00001" value="' + t.openPrice + '" id="eo-' + t.id + '" class="price-inp"/></td>' +
+      '<td><input type="number" step="0.00001" value="' + (t.closePrice||'') + '" id="ec-' + t.id + '" class="price-inp" placeholder="' + (t.status==='Open'?'Enter to close':'') + '"/></td>' +
+      '<td>' + t.lots + '</td>' +
+      '<td id="epnl-' + t.id + '" style="font-weight:800;color:' + (t.pnl>=0?'var(--buy)':'var(--sell)') + '">' + (t.pnl>=0?'+':'') + t.pnl.toFixed(2) + '</td>' +
+      '<td><button class="btn btn-primary btn-sm ed-save-btn" data-id="' + t.id + '">&#x1F4BE; Save</button></td>' +
+      '</tr>';
+  });
+  container.innerHTML = '<div style="overflow-x:auto"><table><thead><tr><th>ID</th><th>Symbol</th><th>Side</th><th>Status</th><th>Open Price</th><th>Close Price</th><th>Lots</th><th>P&L</th><th>Action</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  container.querySelectorAll('.ed-save-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { saveEditorTrade(parseInt(this.getAttribute('data-id'))); });
+  });
+});
+
+function saveEditorTrade(id) {
+  var t = null;
+  for (var i=0;i<localTrades.length;i++) { if(localTrades[i].id===id){t=localTrades[i];break;} }
+  if (!t) return;
+  var newOpen = parseFloat(document.getElementById('eo-'+id).value);
+  var newClose = parseFloat(document.getElementById('ec-'+id).value) || 0;
+  t.openPrice = newOpen;
+  if (newClose > 0) { t.closePrice = newClose; t.status = 'Closed'; }
+  t.pnl = t.side === 'BUY' ? (t.closePrice - t.openPrice)*t.lots*100 : (t.openPrice - t.closePrice)*t.lots*100;
+  t.pnl = parseFloat(t.pnl.toFixed(2));
+  var el = document.getElementById('epnl-'+id);
+  if (el) { el.textContent = (t.pnl>=0?'+':'') + t.pnl.toFixed(2); el.style.color = t.pnl>=0?'var(--buy)':'var(--sell)'; }
+  renderTrades();
+  notify('Trade #' + id + ' updated');
+}
+
+// ========== DEPOSITS ==========
+function renderDeposits() {
+  var rows = '';
+  localDeposits.forEach(function(d) {
+    var bCls = {Approved:'b-active',Pending:'b-pending',Rejected:'b-rejected'}[d.status] || '';
+    rows += '<tr><td style="font-size:11px">' + d.id + '</td><td>' + d.client + '</td>' +
+      '<td><strong>$' + d.amount.toLocaleString() + '</strong></td><td>' + d.method + '</td><td>' + d.date + '</td>' +
+      '<td><span class="badge ' + bCls + '">' + d.status + '</span></td>' +
+      '<td>' + (d.status==='Pending'?'<button class="btn btn-success btn-xs dep-appr" data-id="'+d.id+'">Approve</button> <button class="btn btn-danger btn-xs dep-rej" data-id="'+d.id+'">Reject</button>':'<span style="color:var(--muted);font-size:11px">Done</span>') + '</td></tr>';
+  });
+  document.getElementById('depositsBody').innerHTML = rows;
+  document.querySelectorAll('.dep-appr').forEach(function(btn) { btn.addEventListener('click', function() { var d=localDeposits.find(function(x){return x.id===this.getAttribute('data-id');}.bind(this)); if(d){d.status='Approved';renderDeposits();notify('Deposit approved');} }); });
+  document.querySelectorAll('.dep-rej').forEach(function(btn) { btn.addEventListener('click', function() { var d=localDeposits.find(function(x){return x.id===this.getAttribute('data-id');}.bind(this)); if(d){d.status='Rejected';renderDeposits();notify('Deposit rejected');} }); });
+}
+
+function renderWithdrawals() {
+  var rows = '';
+  localWithdrawals.forEach(function(w) {
+    var bCls = {Approved:'b-active',Pending:'b-pending',Rejected:'b-rejected'}[w.status] || '';
+    rows += '<tr><td style="font-size:11px">' + w.id + '</td><td>' + w.client + '</td>' +
+      '<td><strong>$' + w.amount.toLocaleString() + '</strong></td><td>' + w.method + '</td><td>' + w.date + '</td>' +
+      '<td><span class="badge ' + bCls + '">' + w.status + '</span></td>' +
+      '<td>' + (w.status==='Pending'?'<button class="btn btn-success btn-xs wd-appr" data-id="'+w.id+'">Approve</button> <button class="btn btn-danger btn-xs wd-rej" data-id="'+w.id+'">Reject</button>':'<span style="color:var(--muted);font-size:11px">Done</span>') + '</td></tr>';
+  });
+  document.getElementById('withdrawalsBody').innerHTML = rows;
+  document.querySelectorAll('.wd-appr').forEach(function(btn) { btn.addEventListener('click', function() { var w=localWithdrawals.find(function(x){return x.id===this.getAttribute('data-id');}.bind(this)); if(w){w.status='Approved';renderWithdrawals();refreshBadges();notify('Withdrawal approved');} }); });
+  document.querySelectorAll('.wd-rej').forEach(function(btn) { btn.addEventListener('click', function() { var w=localWithdrawals.find(function(x){return x.id===this.getAttribute('data-id');}.bind(this)); if(w){w.status='Rejected';renderWithdrawals();refreshBadges();notify('Withdrawal rejected');} }); });
+}
+
+function renderBonus() {
+  var rows = localBonuses.map(function(b) {
+    return '<tr><td><strong>' + b.client + '</strong></td><td>' + b.type + '</td><td style="font-weight:700;color:var(--buy)">$' + b.amount + '</td><td>' + b.by + '</td><td>' + b.date + '</td><td><span class="badge b-active">' + b.status + '</span></td></tr>';
+  }).join('');
+  document.getElementById('bonusBody').innerHTML = rows;
+}
+
+// ========== MODALS ==========
+function openMod(type, extra) {
+  var bg = document.getElementById('modBg');
+  bg.classList.add('open');
+  var title = document.getElementById('modTitle');
+  var content = document.getElementById('modContent');
+
+  if (type === 'addClient') {
+    title.textContent = 'Add New Client';
+    content.innerHTML = '<div class="fgrid">' +
+      '<div class="fg"><label class="fl">First Name</label><input class="fc" id="nc-fn" placeholder="John"/></div>' +
+      '<div class="fg"><label class="fl">Last Name</label><input class="fc" id="nc-ln" placeholder="Smith"/></div>' +
+      '<div class="fg"><label class="fl">Email</label><input class="fc" id="nc-em" type="email" placeholder="email@example.com"/></div>' +
+      '<div class="fg"><label class="fl">Phone</label><input class="fc" id="nc-ph" placeholder="+1 234 567 8900"/></div>' +
+      '<div class="fg"><label class="fl">Account Type</label><select class="fc" id="nc-at"><option>Classic</option><option>Standard</option><option>Premium</option></select></div>' +
+      '<div class="fg"><label class="fl">Password</label><input class="fc" id="nc-pw" type="password" placeholder="Set password"/></div>' +
+      '<div class="fg"><label class="fl">Initial Balance ($)</label><input class="fc" id="nc-bl" type="number" placeholder="0"/></div>' +
+      '<div class="fg"><label class="fl">Status</label><select class="fc" id="nc-st"><option>Active</option><option>Pending</option></select></div>' +
+      '</div>' +
+      '<div class="ffoot"><button class="btn btn-primary" id="saveNewClientBtn">Create Client</button><button class="btn btn-outline" id="cancelModBtn">Cancel</button></div>';
+    document.getElementById('saveNewClientBtn').addEventListener('click', saveNewClient);
+    document.getElementById('cancelModBtn').addEventListener('click', closeMod);
+
+  } else if (type === 'editClient') {
+    var cl = getClients().find(function(x) { return x.id === extra; });
+    if (!cl) return;
+    title.textContent = 'Edit Client — ' + cl.name;
+    content.innerHTML = '<div class="fgrid">' +
+      '<div class="fg"><label class="fl">Full Name</label><input class="fc" id="ec-name" value="' + cl.name + '"/></div>' +
+      '<div class="fg"><label class="fl">Email</label><input class="fc" id="ec-email" value="' + cl.email + '"/></div>' +
+      '<div class="fg"><label class="fl">Balance ($)</label><input class="fc" id="ec-bal" type="number" value="' + (cl.balance||0) + '"/></div>' +
+      '<div class="fg"><label class="fl">Account Type</label><select class="fc" id="ec-at"><option' + (cl.accountType==='Classic'?' selected':'') + '>Classic</option><option' + (cl.accountType==='Standard'?' selected':'') + '>Standard</option><option' + (cl.accountType==='Premium'?' selected':'') + '>Premium</option></select></div>' +
+      '<div class="fg"><label class="fl">Status</label><select class="fc" id="ec-st"><option' + (cl.status==='Active'?' selected':'') + '>Active</option><option' + (cl.status==='Pending'?' selected':'') + '>Pending</option><option' + (cl.status==='Inactive'?' selected':'') + '>Inactive</option><option' + (cl.status==='Rejected'?' selected':'') + '>Rejected</option></select></div>' +
+      '</div>' +
+      '<div class="ffoot"><button class="btn btn-primary" id="updateClientBtn">Save Changes</button><button class="btn btn-outline" id="cancelModBtn2">Cancel</button></div>';
+    document.getElementById('updateClientBtn').addEventListener('click', function() { updateClient(extra); });
+    document.getElementById('cancelModBtn2').addEventListener('click', closeMod);
+
+  } else if (type === 'addBonus') {
+    title.textContent = 'Add Bonus' + (extra ? ' — ' + extra : '');
+    var activeClients = getClients().filter(function(c) { return c.status === 'Active'; });
+    var opts = activeClients.map(function(c) { return '<option value="' + c.id + '"' + (c.name === extra ? ' selected' : '') + '>' + c.name + '</option>'; }).join('');
+    content.innerHTML = '<div class="fgrid">' +
+      '<div class="fg ffull"><label class="fl">Client</label><select class="fc" id="bon-cl">' + opts + '</select></div>' +
+      '<div class="fg"><label class="fl">Bonus Type</label><select class="fc" id="bon-ty"><option>Welcome Bonus</option><option>Deposit Bonus</option><option>Trading Bonus</option><option>Referral Bonus</option><option>Custom Bonus</option></select></div>' +
+      '<div class="fg"><label class="fl">Amount ($)</label><input class="fc" id="bon-am" type="number" placeholder="0.00"/></div>' +
+      '</div>' +
+      '<div class="ffoot"><button class="btn btn-primary" id="saveBonusBtn">Add Bonus</button><button class="btn btn-outline" id="cancelBonusBtn">Cancel</button></div>';
+    document.getElementById('saveBonusBtn').addEventListener('click', saveBonus);
+    document.getElementById('cancelBonusBtn').addEventListener('click', closeMod);
+
+  } else if (type === 'adjBal') {
+    var cl2 = getClients().find(function(x) { return x.id === extra; });
+    if (!cl2) return;
+    title.textContent = 'Adjust Balance — ' + cl2.name;
+    content.innerHTML = '<div class="fgrid">' +
+      '<div class="fg ffull"><label class="fl">Current Balance</label><input class="fc" value="$' + Number(cl2.balance||0).toLocaleString() + '" readonly style="background:var(--bg)"/></div>' +
+      '<div class="fg"><label class="fl">Action</label><select class="fc" id="ba-ac"><option>Add</option><option>Subtract</option><option>Set Exact</option></select></div>' +
+      '<div class="fg"><label class="fl">Amount ($)</label><input class="fc" id="ba-am" type="number" placeholder="0.00"/></div>' +
+      '<div class="fg ffull"><label class="fl">Reason</label><input class="fc" id="ba-rs" placeholder="Optional reason"/></div>' +
+      '</div>' +
+      '<div class="ffoot"><button class="btn btn-primary" id="saveBalBtn">Apply</button><button class="btn btn-outline" id="cancelBalBtn">Cancel</button></div>';
+    document.getElementById('saveBalBtn').addEventListener('click', function() { saveBalAdj(extra); });
+    document.getElementById('cancelBalBtn').addEventListener('click', closeMod);
+
+  } else if (type === 'editTrade') {
+    var tr = localTrades.find(function(x) { return x.id === extra; });
+    if (!tr) return;
+    title.textContent = 'Edit Trade #' + extra + ' — ' + tr.symbol;
+    content.innerHTML = '<div style="padding:16px 18px"><div class="edit-note" style="margin:0 0 14px">Editing trade for <strong>' + tr.client + '</strong>. Setting a close price marks the trade Closed.</div></div>' +
+      '<div class="fgrid">' +
+      '<div class="fg"><label class="fl">Open Price</label><input class="fc" type="number" step="0.00001" value="' + tr.openPrice + '" id="mod-op"/></div>' +
+      '<div class="fg"><label class="fl">Close Price</label><input class="fc" type="number" step="0.00001" value="' + (tr.closePrice||'') + '" id="mod-cp" placeholder="Enter to close trade"/></div>' +
+      '<div class="fg"><label class="fl">Lot Size</label><input class="fc" type="number" step="0.01" value="' + tr.lots + '" id="mod-ls"/></div>' +
+      '<div class="fg"><label class="fl">Status</label><select class="fc" id="mod-st"><option' + (tr.status==='Open'?' selected':'') + '>Open</option><option' + (tr.status==='Closed'?' selected':'') + '>Closed</option></select></div>' +
+      '</div>' +
+      '<div class="ffoot"><button class="btn btn-primary" id="saveTradeBtn">Save</button><button class="btn btn-outline" id="cancelTradeBtn">Cancel</button></div>';
+    document.getElementById('saveTradeBtn').addEventListener('click', function() { saveModTrade(extra); });
+    document.getElementById('cancelTradeBtn').addEventListener('click', closeMod);
+
+  } else if (type === 'addDeposit') {
+    var ac3 = getClients().filter(function(c) { return c.status === 'Active'; });
+    title.textContent = 'Add Deposit';
+    content.innerHTML = '<div class="fgrid">' +
+      '<div class="fg ffull"><label class="fl">Client</label><select class="fc" id="dep-cl">' + ac3.map(function(c){return'<option value="'+c.id+'">'+c.name+'</option>';}).join('') + '</select></div>' +
+      '<div class="fg"><label class="fl">Amount ($)</label><input class="fc" id="dep-am" type="number" placeholder="0.00"/></div>' +
+      '<div class="fg"><label class="fl">Method</label><select class="fc"><option>Bank Transfer</option><option>USDT</option><option>Credit Card</option></select></div>' +
+      '<div class="fg"><label class="fl">Status</label><select class="fc" id="dep-st"><option>Approved</option><option>Pending</option></select></div>' +
+      '</div>' +
+      '<div class="ffoot"><button class="btn btn-primary" id="saveDepBtn">Add Deposit</button><button class="btn btn-outline" id="cancelDepBtn">Cancel</button></div>';
+    document.getElementById('saveDepBtn').addEventListener('click', saveDeposit);
+    document.getElementById('cancelDepBtn').addEventListener('click', closeMod);
+  }
+}
+
+function closeMod() { document.getElementById('modBg').classList.remove('open'); }
+document.getElementById('modCloseBtn').addEventListener('click', closeMod);
+document.getElementById('modBg').addEventListener('click', function(e) { if (e.target === this) closeMod(); });
+
+function saveNewClient() {
+  var fn = document.getElementById('nc-fn').value.trim();
+  var ln = document.getElementById('nc-ln').value.trim();
+  var em = document.getElementById('nc-em').value.trim();
+  var pw = document.getElementById('nc-pw').value;
+  var bl = parseFloat(document.getElementById('nc-bl').value) || 0;
+  if (!fn || !ln || !em) { notify('Fill required fields'); return; }
+  var clients = getClients();
+  if (clients.find(function(c) { return c.email === em; })) { notify('Email already exists'); return; }
+  clients.push({
+    id: Date.now(), appId: 'FMP-' + Math.floor(100000+Math.random()*900000),
+    name: fn+' '+ln, firstName:fn, lastName:ln, email:em, phone:'', country:'',
+    accountType: document.getElementById('nc-at').value,
+    password: pw||'changeme', balance:bl, bonus:0,
+    status: document.getElementById('nc-st').value,
+    joined: new Date().toLocaleDateString('en-GB').split('/').join('-'),
+    registeredAt: new Date().toISOString()
+  });
+  saveClients(clients);
+  closeMod(); renderAll(); refreshBadges();
+  notify('Client ' + fn + ' ' + ln + ' created');
+}
+
+function updateClient(id) {
+  var clients = getClients();
+  for (var i=0;i<clients.length;i++) {
+    if (clients[i].id === id) {
+      clients[i].name = document.getElementById('ec-name').value;
+      clients[i].email = document.getElementById('ec-email').value;
+      clients[i].balance = parseFloat(document.getElementById('ec-bal').value) || 0;
+      clients[i].accountType = document.getElementById('ec-at').value;
+      clients[i].status = document.getElementById('ec-st').value;
+      saveClients(clients); closeMod(); renderAll(); refreshBadges();
+      notify('Client updated');
+      return;
+    }
+  }
+}
+
+function saveBonus() {
+  var cid = parseInt(document.getElementById('bon-cl').value);
+  var amt = parseFloat(document.getElementById('bon-am').value);
+  if (!amt || amt <= 0) { notify('Enter valid amount'); return; }
+  var clients = getClients();
+  for (var i=0;i<clients.length;i++) {
+    if (clients[i].id === cid) {
+      clients[i].balance = (clients[i].balance||0) + amt;
+      clients[i].bonus = (clients[i].bonus||0) + amt;
+      var name = clients[i].name;
+      saveClients(clients);
+      localBonuses.unshift({client:name, type:document.getElementById('bon-ty').value, amount:amt, by:'Admin', date:new Date().toLocaleDateString('en-GB').split('/').join('-'), status:'Active'});
+      closeMod(); renderAll();
+      notify('$' + amt + ' bonus added to ' + name);
+      return;
+    }
+  }
+}
+
+function saveBalAdj(id) {
+  var clients = getClients();
+  for (var i=0;i<clients.length;i++) {
+    if (clients[i].id === id) {
+      var action = document.getElementById('ba-ac').value;
+      var amt = parseFloat(document.getElementById('ba-am').value);
+      if (!amt || amt <= 0) { notify('Enter valid amount'); return; }
+      if (action === 'Add') clients[i].balance = (clients[i].balance||0) + amt;
+      else if (action === 'Subtract') clients[i].balance = Math.max(0, (clients[i].balance||0) - amt);
+      else clients[i].balance = amt;
+      saveClients(clients); closeMod(); renderAll();
+      notify('Balance adjusted: $' + Number(clients[i].balance).toLocaleString());
+      return;
+    }
+  }
+}
+
+function saveModTrade(id) {
+  for (var i=0;i<localTrades.length;i++) {
+    if (localTrades[i].id === id) {
+      var t = localTrades[i];
+      t.openPrice = parseFloat(document.getElementById('mod-op').value);
+      var cp = parseFloat(document.getElementById('mod-cp').value) || 0;
+      if (cp) t.closePrice = cp;
+      t.lots = parseFloat(document.getElementById('mod-ls').value);
+      t.status = document.getElementById('mod-st').value;
+      if (t.closePrice && t.closePrice > 0) {
+        t.pnl = t.side==='BUY' ? (t.closePrice-t.openPrice)*t.lots*100 : (t.openPrice-t.closePrice)*t.lots*100;
+        t.pnl = parseFloat(t.pnl.toFixed(2));
+      }
+      closeMod(); renderTrades();
+      notify('Trade #' + id + ' saved');
+      return;
+    }
+  }
+}
+
+function saveDeposit() {
+  var cid = parseInt(document.getElementById('dep-cl').value);
+  var amt = parseFloat(document.getElementById('dep-am').value);
+  var st = document.getElementById('dep-st').value;
+  if (!amt || amt <= 0) { notify('Enter valid amount'); return; }
+  var clients = getClients();
+  var cl = clients.find(function(c) { return c.id === cid; });
+  if (st === 'Approved' && cl) {
+    for (var i=0;i<clients.length;i++) { if(clients[i].id===cid){clients[i].balance=(clients[i].balance||0)+amt;break;} }
+    saveClients(clients);
+  }
+  localDeposits.push({id:'DEP'+Date.now(), clientId:cid, client:cl?cl.name:'Unknown', amount:amt, method:'Admin Add', date:new Date().toLocaleDateString('en-GB').split('/').join('-'), status:st});
+  closeMod(); renderAll();
+  notify('Deposit added');
+}
+
+// ========== NAVIGATION ==========
+var sections = ['dashboard','approvals','clients','trades','tradeEditor','deposits','withdrawals','bonus'];
+var titles = {dashboard:'Dashboard',approvals:'Registration Approvals',clients:'Client Management',trades:'Trade Management',tradeEditor:'Trade Price Editor',deposits:'Deposit Management',withdrawals:'Withdrawal Requests',bonus:'Bonus Manager'};
+
+function goSec(name) {
+  sections.forEach(function(s) {
+    var el = document.getElementById('sec-' + s);
+    if (el) el.classList.remove('active');
+    var nav = document.getElementById('nav-' + s);
+    if (nav) nav.classList.remove('active');
+  });
+  var secEl = document.getElementById('sec-' + name);
+  if (secEl) secEl.classList.add('active');
+  var navEl = document.getElementById('nav-' + name);
+  if (navEl) navEl.classList.add('active');
+  document.getElementById('tbTitle').textContent = titles[name] || name;
+}
+
+sections.forEach(function(s) {
+  var nav = document.getElementById('nav-' + s);
+  if (nav) nav.addEventListener('click', function() { goSec(s); });
+});
+
+document.getElementById('addClientBtn').addEventListener('click', function() { openMod('addClient'); });
+document.getElementById('addDepositBtn').addEventListener('click', function() { openMod('addDeposit'); });
+document.getElementById('addBonusBtn').addEventListener('click', function() { openMod('addBonus', ''); });
+document.getElementById('viewAllPendingBtn').addEventListener('click', function() { goSec('approvals'); });
+
+})();
+</script>
+</body>
+</html>
